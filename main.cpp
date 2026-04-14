@@ -38,7 +38,13 @@ Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS)
 
 // Function Declarations
 void showCounters();
-int getInterval(int &counter_01);
+int getInterval();
+
+// variable to store time until dispense
+int counter_01 = getInterval();
+
+// variable to store keypress
+char key;
 
 void setup() {
   servo_01.attach(servo_01_pin); // connects servo_01 to servo_01_pin
@@ -50,9 +56,6 @@ void setup() {
   // Setup Serial Monitor for debugging (9600 baud rate)
   Serial.begin(9600);
 
-  // variable to store time until dispense
-  int counter_01 = getInterval();
-
 }
 
 void loop() {
@@ -63,12 +66,12 @@ void loop() {
     lastTick = millis();
     if (counter_01 >= 0) {
       counter_01--;
-      showCounter();
+      showCounters();
     }
   }
 
   if (key)
-    counter_01 = getInterval(counter_01);
+    counter_01 = getInterval();
   else if (counter_01 == 0) {
     servo_01.write(servo_01_dispense_pos);
     delay(1000);
@@ -111,24 +114,24 @@ void loop() {
 void showCounters() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Counter:")
+  lcd.print("Counter:");
   lcd.setCursor(0, 1);
   lcd.print(counter_01);
 }
 
 // Interval Entry Function
-int getInterval(int &counter_01) {
+int getInterval() {
   lcd.clear();
 
-  char key = keypad.getKey()
-  string input = "";
+  char key = customKeypad.getKey();
+  String input = "";
 
-  while (True) {
+  while (true) {
     lcd.setCursor(0, 0);
-    lcd.print("Interval in sec:")
+    lcd.print("Interval in sec:");
     if (key) {
       if (key == enter) { // confirm string
-        return input.toInt() // what happens if user confirms without entering a number?
+        return input.toInt(); // what happens if user confirms without entering a number?
       }
       else if (key == clear) { // clear string
         input = "";
@@ -136,8 +139,8 @@ int getInterval(int &counter_01) {
       }
       else if (key == 'A' || key == 'B' || key == 'C' || key == 'D') {
         lcd.clear();
-        lcd.setCursor(0,1)
-        lcd.print("Enter a number")
+        lcd.setCursor(0,1);
+        lcd.print("Enter a number");
       }
       else { // add to string
         input += key;
@@ -145,4 +148,5 @@ int getInterval(int &counter_01) {
         lcd.print(input);
       }
     }
+  }
 }
