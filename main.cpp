@@ -48,7 +48,6 @@ void setup() {
   servo_01.write(0); // Moves servo to 0 degree position
 
   lcd.begin(16, 2); // 16 columns, 2 rows on LCD screen
-  lcd.print("Making Progress");
 
   // Setup Serial Monitor for debugging (9600 baud rate)
   Serial.begin(9600);
@@ -60,7 +59,7 @@ void setup() {
 void loop() {
   key = customKeypad.getKey();
 
-  if (key = clear)
+  if (key == clear)
     counter_01 = getInterval();
 
   if (millis() - lastTick >= 1000) {
@@ -78,7 +77,7 @@ void loop() {
   }
 }
 
-// Show Counters Function
+// Show Counters Function - clears LCD and prints current time
 void showCounters() {
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -87,7 +86,7 @@ void showCounters() {
   lcd.print(counter_01);
 }
 
-// Interval Entry Function
+// Interval Entry Function - clears LCD, prompts for interval, returns interval as integer
 int getInterval() {
   lcd.clear();
   String input = "";
@@ -98,17 +97,11 @@ int getInterval() {
     lcd.print("Interval in sec:");
     if (key) {
       if (key == enter) { // confirm string
-        if (input.length() > 0) // prevents servo from activating if enter is pressed with no interval having been input
-          return input.toInt();
+        return input.toInt();
       }
       else if (key == clear) { // clear string
         input = "";
         lcd.clear();
-      }
-      else if (key == 'A' || key == 'B' || key == 'C' || key == 'D') {
-        lcd.clear();
-        lcd.setCursor(0,1);
-        lcd.print("Enter a number");
       }
       else { // add to string
         input += key;
