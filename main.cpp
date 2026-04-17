@@ -7,9 +7,9 @@ unsigned long lastTick = 0;
 // Servo
 Servo servo_01; // create servo object
 int servo_01_pin = 6; // servo 1 pin - MUST BE PWM PIN
-int servo_01_current_pos = 0; // variable to store current position of servo 01
 int servo_01_start_pos = 0; // variable to store starting position of servo 01
 int servo_01_dispense_pos = 180; // variable to store dispensing position of servo 01
+int counter_01 = 0; // variable to store interval for servo 01
 
 // LCD pins
 const int rs = 13, en = 12, d4 = A0, d5 = A1, d6 = A2, d7 = A3;
@@ -40,9 +40,6 @@ Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS)
 void showCounters();
 int getInterval();
 
-// variable to store time until dispense
-int counter_01 = getInterval();
-
 // variable to store keypress
 char key;
 
@@ -56,58 +53,29 @@ void setup() {
   // Setup Serial Monitor for debugging (9600 baud rate)
   Serial.begin(9600);
 
+  // variable to store time until dispense
+  counter_01 = getInterval();
 }
 
 void loop() {
+  key = customKeypad.getKey();
 
-  showCounters();
+  if (key = clear)
+    counter_01 = getInterval();
 
   if (millis() - lastTick >= 1000) {
     lastTick = millis();
-    if (counter_01 >= 0) {
+    if (counter_01 > 0) {
       counter_01--;
       showCounters();
     }
+    else if (counter_01 == 0) {
+      servo_01.write(servo_01_dispense_pos);
+      delay(1000);
+      servo_01.write(servo_01_start_pos);
+      counter_01 = getInterval();
+    }
   }
-
-  if (key)
-    counter_01 = getInterval();
-  else if (counter_01 == 0) {
-    servo_01.write(servo_01_dispense_pos);
-    delay(1000);
-    servo_01.write(servo_01_start_pos);
-  }
-  else
-    showCounters();
-
-
-
-  //  lcd.setCursor(0, 1); // set cursor to col 0, row 1
-  //  lcd.print(millis() / 1000);
-
-  // char customKey = customKeypad.getKey();
-  // if (customKey) {
-  //   // lcd.clear(); // clears the lcd
-  //   lcd.setCursor(0, 1);
-  //   lcd.print(customKey);
-  // }
-
-  // Testing Servo Rotation
-  // for (servo_01_pos = 0; servo_01_pos <= 180; servo_01_pos += 1) {
-  //   servo_01.write(servo_01_pos);
-  //   delay(15);
-  // }
-  // for (servo_01_pos = 180; servo_01_pos >= 0; servo_01_pos -= 1) {
-  //   servo_01.write(servo_01_pos);
-  //   delay(15);
-  // }
-
-  // // Debugging keypad
-  // char customKey = customKeypad.getKey();
-  // if (customKey) {
-  //   Serial.println(customKey);
-  // }
-
 }
 
 // Show Counters Function
@@ -122,16 +90,16 @@ void showCounters() {
 // Interval Entry Function
 int getInterval() {
   lcd.clear();
-
-  char key = customKeypad.getKey();
   String input = "";
 
   while (true) {
+    key = customKeypad.getKey();
     lcd.setCursor(0, 0);
     lcd.print("Interval in sec:");
     if (key) {
       if (key == enter) { // confirm string
-        return input.toInt(); // what happens if user confirms without entering a number?
+        if (input.length() > 0) // prevents servo from activating if enter is pressed with no interval having been input
+          return input.toInt();
       }
       else if (key == clear) { // clear string
         input = "";
