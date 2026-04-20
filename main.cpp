@@ -8,8 +8,9 @@ unsigned long lastTick = 0;
 Servo servo_01; // create servo object
 int servo_01_pin = 6; // servo 1 pin - MUST BE PWM PIN
 int servo_01_start_pos = 0; // variable to store starting position of servo 01
-int servo_01_dispense_pos = 180; // variable to store dispensing position of servo 01
+int servo_01_dispense_pos = 150; // variable to store dispensing position of servo 01
 int counter_01 = 0; // variable to store interval for servo 01
+int servo_speed = 1; // 1-10
 
 // LCD pins
 const int rs = 13, en = 12, d4 = A0, d5 = A1, d6 = A2, d7 = A3;
@@ -39,6 +40,7 @@ Keypad customKeypad = Keypad(makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS)
 // Function Declarations
 void showCounters();
 int getInterval();
+void dispense();
 
 // variable to store keypress
 char key;
@@ -69,9 +71,7 @@ void loop() {
       showCounters();
     }
     else if (counter_01 == 0) {
-      servo_01.write(servo_01_dispense_pos);
-      delay(1000);
-      servo_01.write(servo_01_start_pos);
+      dispense();
       counter_01 = getInterval();
     }
   }
@@ -109,5 +109,28 @@ int getInterval() {
         lcd.print(input);
       }
     }
+  }
+}
+
+void dispense() {
+  int current_pos = servo_01_start_pos;
+
+  // move servo to dispense
+  while (current_pos < servo_01_dispense_pos) {
+    current_pos += servo_speed;
+    if (current_pos > servo_01_dispense_pos)
+      current_pos = servo_01_dispense_pos;
+    servo_01.write(current_pos);
+    delay(10); // how long to wait between steps
+  }
+  delay(500); // how long to hold at dispense position
+
+  // move servo back to starting position
+  while (current_pos > servo_01_start_pos) {
+    current_pos -= servo_speed;
+    if (current_pos < servo_01_start_pos)
+      current_pos = servo_01_start_pos;
+    servo_01.write(current_pos);
+    delay(10);
   }
 }
