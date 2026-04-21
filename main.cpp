@@ -1,6 +1,10 @@
 #include <LiquidCrystal.h> // includes LCD library
 #include <Keypad.h> // includes keypad library (separate install)
 #include <Servo.h> // include servo library
+#include <DHT.h> // include DHT library (separate install)
+#define DHTPIN 9
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
 
 unsigned long lastTick = 0;
 
@@ -8,7 +12,7 @@ unsigned long lastTick = 0;
 Servo servo_01; // create servo object
 int servo_01_pin = 6; // servo 1 pin - MUST BE PWM PIN
 int servo_01_start_pos = 0; // variable to store starting position of servo 01
-int servo_01_dispense_pos = 150; // variable to store dispensing position of servo 01
+int servo_01_dispense_pos = 180; // variable to store dispensing position of servo 01
 int counter_01 = 0; // variable to store interval for servo 01
 int servo_speed = 1; // 1-10
 
@@ -54,6 +58,10 @@ void setup() {
   // Setup Serial Monitor for debugging (9600 baud rate)
   Serial.begin(9600);
 
+  // Start temp and humidity sensor
+  dht.begin();
+  delay(2000);
+
   // variable to store time until dispense
   counter_01 = getInterval();
 }
@@ -79,11 +87,21 @@ void loop() {
 
 // Show Counters Function - clears LCD and prints current time
 void showCounters() {
+  float temp = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
   lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Counter:");
-  lcd.setCursor(0, 1);
+  lcd.setCursor(0, 0); // set cursor to first row
+  lcd.print("Timer: ");
   lcd.print(counter_01);
+
+  lcd.setCursor(0, 1); // set cursor to second row
+  lcd.print(temp, 0);
+  lcd.print((char)223);
+  lcd.print("C ");
+  lcd.print(humidity, 0);
+  lcd.print("%");
+  lcd.print(" humid");
 }
 
 // Interval Entry Function - clears LCD, prompts for interval, returns interval as integer
@@ -112,6 +130,7 @@ int getInterval() {
   }
 }
 
+// function to dispense a pill
 void dispense() {
   int current_pos = servo_01_start_pos;
 
